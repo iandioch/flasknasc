@@ -1,5 +1,7 @@
 import json
 
+from pathlib import Path
+
 from flask import Flask, redirect
 
 app = Flask(__name__)
@@ -17,6 +19,20 @@ class User:
         self.links = {}
 
         User.users[prefix] = self
+
+    def load_saved_urls(self, root_path_obj):
+        user_dir = root_path_obj / self.prefix
+        if not (user_dir.exists() and user_dir.is_dir()):
+            print('No user directory for user with prefix {}'.format(self.prefix))
+            return
+        links_file = user_dir / 'links.json'
+        if not links_file.exists():
+            print('User link file does not exist for user prefix {}'.format(self.prefix))
+            return
+        with links_file.open() as f:
+            data = json.load(f)
+            for link in data['links']:
+                self.links[link['id']] = link['address']
 
     @staticmethod
     def get_url(prefix, link_id):
@@ -37,11 +53,13 @@ def load_config_file(path):
                 prefix = user['prefix']
                 key = user['key']
                 user_obj = User(prefix, key)
+                user_obj.load_saved_urls(Path('.flasknasc'))
 
 
 @app.route('/')
 def root():
     return 'hello world'
+
 
 @app.route('/fwd/<string:user_prefix>/<string:link_id>')
 def url(user_prefix, link_id):
