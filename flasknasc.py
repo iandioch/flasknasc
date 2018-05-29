@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, redirect
 
 app = Flask(__name__)
@@ -27,6 +29,16 @@ class User:
         return user.links[link_id]
 
 
+def load_config_file(path):
+    with open(path) as f:
+        data = json.load(f)
+        if 'users' in data:
+            for user in data['users']:
+                prefix = user['prefix']
+                key = user['key']
+                user_obj = User(prefix, key)
+
+
 @app.route('/')
 def root():
     return 'hello world'
@@ -40,4 +52,5 @@ def url(user_prefix, link_id):
 
 
 if __name__ == '__main__':
+    load_config_file('flasknasc_config.json')
     app.run()
