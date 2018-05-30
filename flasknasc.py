@@ -6,6 +6,8 @@ from flask import Flask, redirect, request
 
 app = Flask(__name__)
 
+ROOT_PATH = Path('.flasknasc')
+
 
 class User:
     users = {}
@@ -34,6 +36,23 @@ class User:
             for link in data['links']:
                 self.links[link['id']] = link['address']
 
+    def save_urls(self, root_path_obj):
+        user_dir = root_path_obj / self.prefix
+        if not user_dir.exists():
+            print('Creating user directory for prefix {}'.format(self.prefix))
+            user_dir.mkdir(parents=True)
+        links_file = user_dir / 'links.json'
+        data = {
+            'links': []
+        }
+        for link in self.links:
+            data['links'].append({
+                'id': link,
+                'address': self.links[link]
+            })
+        with links_file.open(mode='w') as f:
+            json.dump(data, f)
+
     @staticmethod
     def get_url(prefix, link_id):
         if prefix not in User.users:
@@ -54,7 +73,7 @@ class User:
         if link_id in user.links:
             raise RuntimeError('Link already exists with this ID')
         user.links[link_id] = address
-        
+        user.save_urls(ROOT_PATH)
 
 
 def load_config_file(path):
@@ -65,7 +84,7 @@ def load_config_file(path):
                 prefix = user['prefix']
                 key = user['key']
                 user_obj = User(prefix, key)
-                user_obj.load_saved_urls(Path('.flasknasc'))
+                user_obj.load_saved_urls(ROOT_PATH)
 
 
 @app.route('/')
@@ -79,6 +98,7 @@ def route_fwd(user_prefix, link_id):
         return redirect(User.get_url(user_prefix, link_id))
     except Exception as e:
         return str(e)
+
 
 @app.route('/new/<string:user_prefix>/<string:link_id>')
 def route_new(user_prefix, link_id):
