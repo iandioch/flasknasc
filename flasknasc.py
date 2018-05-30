@@ -2,7 +2,7 @@ import json
 
 from pathlib import Path
 
-from flask import Flask, redirect
+from flask import Flask, redirect, request
 
 app = Flask(__name__)
 
@@ -44,6 +44,18 @@ class User:
                 'User has no link with given id {}'.format(link_id))
         return user.links[link_id]
 
+    @staticmethod
+    def new_url(prefix, key, link_id, address):
+        if prefix not in User.users:
+            raise RuntimeError('No such user prefix {}'.format(prefix))
+        user = User.users[prefix]
+        if key != user.key:
+            raise RuntimeError('Key does not match')
+        if link_id in user.links:
+            raise RuntimeError('Link already exists with this ID')
+        user.links[link_id] = address
+        
+
 
 def load_config_file(path):
     with open(path) as f:
@@ -62,9 +74,19 @@ def root():
 
 
 @app.route('/fwd/<string:user_prefix>/<string:link_id>')
-def url(user_prefix, link_id):
+def route_fwd(user_prefix, link_id):
     try:
         return redirect(User.get_url(user_prefix, link_id))
+    except Exception as e:
+        return str(e)
+
+@app.route('/new/<string:user_prefix>/<string:link_id>')
+def route_new(user_prefix, link_id):
+    try:
+        key = request.args.get('key')
+        address = request.args.get('address')
+        User.new_url(user_prefix, key, link_id, address)
+        return 'ok'
     except Exception as e:
         return str(e)
 
