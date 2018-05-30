@@ -9,6 +9,7 @@ from flask import Flask, redirect, request
 app = Flask(__name__)
 
 ROOT_PATH = Path('.flasknasc')
+CONFIG_FILE_PATH = ROOT_PATH / 'config.json'
 
 
 class User:
@@ -79,7 +80,7 @@ class User:
 
 
 def load_config_file(path):
-    with open(path) as f:
+    with path.open() as f:
         data = json.load(f)
         if 'users' in data:
             for user in data['users']:
@@ -112,6 +113,7 @@ def route_new(user_prefix, link_id):
         key = request.args.get('key')
         address = request.args.get('address')
         User.new_url(user_prefix, key, link_id, address)
+        print(f'new link: /fwd/{user_prefix}/{link_id} -> {address}')
         return f'/fwd/{user_prefix}/{link_id}'
     except Exception as e:
         return str(e)
@@ -123,11 +125,12 @@ def route_new_random_id(user_prefix):
         key = request.args.get('key')
         address = request.args.get('address')
         User.new_url(user_prefix, key, link_id, address)
+        print(f'new link: /fwd/{user_prefix}/{link_id} -> {address}')
         return f'/fwd/{user_prefix}/{link_id}'
     except Exception as e:
         return str(e)
 
 
 if __name__ == '__main__':
-    load_config_file('flasknasc_config.json')
+    load_config_file(CONFIG_FILE_PATH)
     app.run()
