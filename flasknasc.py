@@ -1,4 +1,6 @@
 import json
+import random
+import string
 
 from pathlib import Path
 
@@ -86,6 +88,10 @@ def load_config_file(path):
                 user_obj = User(prefix, key)
                 user_obj.load_saved_urls(ROOT_PATH)
 
+def generate_random_id(length=12):
+    chars = string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
+
 
 @app.route('/')
 def root():
@@ -106,7 +112,18 @@ def route_new(user_prefix, link_id):
         key = request.args.get('key')
         address = request.args.get('address')
         User.new_url(user_prefix, key, link_id, address)
-        return 'ok'
+        return f'/fwd/{user_prefix}/{link_id}'
+    except Exception as e:
+        return str(e)
+
+@app.route('/new/<string:user_prefix>')
+def route_new_random_id(user_prefix):
+    try:
+        link_id = generate_random_id()
+        key = request.args.get('key')
+        address = request.args.get('address')
+        User.new_url(user_prefix, key, link_id, address)
+        return f'/fwd/{user_prefix}/{link_id}'
     except Exception as e:
         return str(e)
 
