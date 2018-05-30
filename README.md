@@ -15,7 +15,10 @@ A lightweight minimal-dependency URL shortener in Python. The name comes from `F
 
 # Setup
 
-Requires Python3.6+. Install the dependencies (ie. Flask) by running `python3.6 -m pip install -r requirements.txt`.
+Requires Python3.6+.
+
+1. Install the dependencies (ie. Flask) by running `python3.6 -m pip install -r requirements.txt`.
+2. You should create a flasknasc configuration file at `.flasknasc/config.json`. See the "Configuration" section of this document for an example.
 
 # Usage
 
