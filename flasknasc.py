@@ -88,6 +88,7 @@ def load_config_file(path):
                 key = user['key']
                 user_obj = User(prefix, key)
                 user_obj.load_saved_urls(ROOT_PATH)
+        return data
 
 def generate_random_id(length=12):
     chars = string.ascii_lowercase + string.digits
@@ -132,5 +133,8 @@ def route_new_random_id(user_prefix):
 
 
 if __name__ == '__main__':
-    load_config_file(CONFIG_FILE_PATH)
-    app.run()
+    config = load_config_file(CONFIG_FILE_PATH)
+    port = int(config.get('port', 5821))
+    host = config.get('host', '0.0.0.0')
+    debug = config.get('debug', True)
+    app.run(host=host, port=port, debug=debug)
